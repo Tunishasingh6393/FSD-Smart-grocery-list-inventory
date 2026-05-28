@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SmartPantry — Grocery & Inventory Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #0a0e14;
+  --surface: #111722;
+  --surface2: #1a2235;
+  --border: #1e2d45;
+  --accent: #22d3a5;
+  --accent2: #f97316;
+  --warn: #f59e0b;
+  --danger: #ef4444;
+  --text: #e8edf5;
+  --muted: #5a7090;
+  --font-head: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+/* ── Auth Screen ── */
+#auth-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;
+  background: radial-gradient(ellipse 80% 60% at 50% -10%, #0d3a2a 0%, transparent 70%),
+              radial-gradient(ellipse 60% 40% at 80% 80%, #1a1c3a 0%, transparent 60%), var(--bg);}
+.auth-card{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:48px 40px;width:100%;max-width:420px;box-shadow:0 32px 80px rgba(0,0,0,.5)}
+.auth-logo{font-family:var(--font-head);font-size:28px;font-weight:800;color:var(--accent);letter-spacing:-1px;margin-bottom:4px}
+.auth-sub{color:var(--muted);font-size:14px;margin-bottom:32px}
+.tab-row{display:flex;gap:0;background:var(--surface2);border-radius:12px;padding:4px;margin-bottom:24px}
+.tab-btn{flex:1;padding:10px;border:none;background:transparent;color:var(--muted);font-family:var(--font-body);font-size:14px;font-weight:500;cursor:pointer;border-radius:9px;transition:all .2s}
+.tab-btn.active{background:var(--accent);color:#0a0e14;font-weight:700}
+.form-group{margin-bottom:16px}
+label{display:block;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:6px;letter-spacing:.5px;text-transform:uppercase}
+input,select,textarea{width:100%;padding:12px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:var(--font-body);font-size:15px;outline:none;transition:border-color .2s}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+select option{background:var(--surface2)}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-family:var(--font-head);font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.3px}
+.btn-primary{background:var(--accent);color:#0a0e14}
+.btn-primary:hover{background:#1bbf94;transform:translateY(-1px)}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-sm{width:auto;padding:7px 14px;font-size:13px;border-radius:8px}
+.demo-note{text-align:center;margin-top:16px;font-size:13px;color:var(--muted)}
+.demo-note span{color:var(--accent);cursor:pointer;font-weight:600}
+/* ── App Layout ── */
+#app{display:none;flex-direction:column;min-height:100vh}
+/* Sidebar */
+.sidebar{position:fixed;left:0;top:0;height:100vh;width:240px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;transition:transform .3s}
+.sidebar-logo{padding:24px 20px;font-family:var(--font-head);font-size:20px;font-weight:800;color:var(--accent);border-bottom:1px solid var(--border)}
+.sidebar-logo span{color:var(--text)}
+.nav-items{flex:1;padding:12px 8px;display:flex;flex-direction:column;gap:2px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:10px;cursor:pointer;color:var(--muted);font-size:14px;font-weight:500;transition:all .2s;border:none;background:transparent;text-align:left;width:100%}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:rgba(34,211,165,.12);color:var(--accent)}
+.nav-item .icon{font-size:18px;width:22px;text-align:center}
+.sidebar-user{padding:16px;border-top:1px solid var(--border)}
+.user-badge{display:flex;align-items:center;gap:10px}
+.user-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#1a6b88);display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-weight:800;font-size:14px;color:#0a0e14}
+.user-name{font-size:14px;font-weight:600}
+.user-email{font-size:12px;color:var(--muted)}
+/* Main content */
+.main{margin-left:240px;flex:1;padding:32px;min-height:100vh}
+.page{display:none}
+.page.active{display:block}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
+.page-title{font-family:var(--font-head);font-size:28px;font-weight:800;letter-spacing:-1px}
+.page-title span{color:var(--accent)}
+/* Cards / Stats */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;right:0;width:80px;height:80px;border-radius:50%;filter:blur(30px);opacity:.3}
+.stat-card.green::before{background:var(--accent)}
+.stat-card.orange::before{background:var(--accent2)}
+.stat-card.yellow::before{background:var(--warn)}
+.stat-card.red::before{background:var(--danger)}
+.stat-icon{font-size:24px;margin-bottom:12px}
+.stat-val{font-family:var(--font-head);font-size:32px;font-weight:800;line-height:1}
+.stat-label{font-size:13px;color:var(--muted);margin-top:4px}
+/* Tables & Lists */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.card-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-head h3{font-family:var(--font-head);font-size:16px;font-weight:700}
+.card-body{padding:0}
+table{width:100%;border-collapse:collapse}
+th{padding:12px 16px;text-align:left;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;background:var(--surface2)}
+td{padding:12px 16px;border-bottom:1px solid var(--border);font-size:14px;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600}
+.badge-green{background:rgba(34,211,165,.15);color:var(--accent)}
+.badge-yellow{background:rgba(245,158,11,.15);color:var(--warn)}
+.badge-red{background:rgba(239,68,68,.15);color:var(--danger)}
+.badge-blue{background:rgba(99,179,237,.15);color:#63b3ed}
+.badge-gray{background:var(--surface2);color:var(--muted)}
+/* Stock bar */
+.stock-bar{height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;min-width:80px}
+.stock-fill{height:100%;border-radius:3px;transition:width .3s}
+/* Alert items */
+.alert-item{display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid var(--border)}
+.alert-item:last-child{border-bottom:none}
+.alert-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.alert-icon.warn{background:rgba(245,158,11,.15)}
+.alert-icon.danger{background:rgba(239,68,68,.15)}
+.alert-body{flex:1}
+.alert-title{font-size:14px;font-weight:600}
+.alert-desc{font-size:12px;color:var(--muted);margin-top:2px}
+/* Grocery list */
+.grocery-item{display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid var(--border);transition:opacity .2s}
+.grocery-item.checked{opacity:.45}
+.grocery-item:last-child{border-bottom:none}
+.check-box{width:20px;height:20px;border-radius:6px;border:2px solid var(--border);cursor:pointer;flex-shrink:0;transition:all .2s;display:flex;align-items:center;justify-content:center;font-size:12px}
+.check-box.checked{background:var(--accent);border-color:var(--accent);color:#0a0e14}
+.grocery-name{font-size:14px;font-weight:500;flex:1}
+.grocery-qty{font-size:13px;color:var(--muted)}
+/* Form overlay */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+.overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:32px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto}
+.modal-title{font-family:var(--font-head);font-size:20px;font-weight:800;margin-bottom:24px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-grid .full{grid-column:1/-1}
+/* Mobile */
+.hamburger{display:none;position:fixed;top:16px;left:16px;z-index:300;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px;cursor:pointer;font-size:18px}
+.search-bar{display:flex;gap:10px;margin-bottom:20px}
+.search-bar input{flex:1}
+.filter-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.chip{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:13px;cursor:pointer;transition:all .2s;font-family:var(--font-body)}
+.chip.active,.chip:hover{background:var(--accent);border-color:var(--accent);color:#0a0e14;font-weight:600}
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-state .emoji{font-size:48px;margin-bottom:12px}
+.empty-state p{font-size:15px}
+.section-head{font-family:var(--font-head);font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;padding:12px 20px 8px;background:var(--surface2)}
+/* Charts */
+.chart-wrap{padding:20px}
+.mini-chart{height:120px;position:relative;display:flex;align-items:flex-end;gap:8px}
+.bar-col{flex:1;background:rgba(34,211,165,.2);border-radius:4px 4px 0 0;position:relative;transition:all .3s;cursor:pointer}
+.bar-col:hover{background:rgba(34,211,165,.4)}
+.bar-col .tip{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:12px;white-space:nowrap;display:none;margin-bottom:6px}
+.bar-col:hover .tip{display:block}
+/* toast */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--accent);border-radius:12px;padding:14px 20px;font-size:14px;font-weight:500;z-index:999;transform:translateY(80px);opacity:0;transition:all .3s;max-width:320px}
+.toast.show{transform:translateY(0);opacity:1}
+@media(max-width:768px){
+  .hamburger{display:flex}
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0;padding:16px;padding-top:60px}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .form-grid{grid-template-columns:1fr}
+  .form-grid .full{grid-column:auto}
+}
+.actions{display:flex;gap:8px}
+.icon-btn{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:transparent;cursor:pointer;color:var(--muted);font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.icon-btn:hover{border-color:var(--accent);color:var(--accent)}
+.icon-btn.del:hover{border-color:var(--danger);color:var(--danger)}
+.qty-control{display:flex;align-items:center;gap:6px}
+.qty-btn{width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.qty-btn:hover{border-color:var(--accent);color:var(--accent)}
+.qty-num{min-width:40px;text-align:center;font-weight:600;font-size:14px}
+</style>
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">SmartPantry</div>
+    <div class="auth-sub">Grocery & Inventory Manager</div>
+    <div class="tab-row">
+      <button class="tab-btn active" onclick="switchTab('login')">Sign In</button>
+      <button class="tab-btn" onclick="switchTab('register')">Register</button>
+    </div>
+    <div id="login-form">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="login-email" placeholder="demo@smartpantry.app" value="demo@smartpantry.app"/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-pass" placeholder="••••••••" value="password123"/>
+      </div>
+      <button class="btn btn-primary" onclick="doLogin()">Sign In</button>
+    </div>
+    <div id="register-form" style="display:none">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="reg-name" placeholder="Your name"/>
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="reg-email" placeholder="you@email.com"/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="reg-pass" placeholder="••••••••"/>
+      </div>
+      <button class="btn btn-primary" onclick="doRegister()">Create Account</button>
+    </div>
+    <p class="demo-note">Use demo credentials or <span onclick="fillDemo()">click here</span> to auto-fill</p>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+  <button class="hamburger" onclick="toggleSidebar()">☰</button>
+  
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-logo">Smart<span>Pantry</span></div>
+    <div class="nav-items">
+      <button class="nav-item active" onclick="navigate('dashboard')"><span class="icon">📊</span>Dashboard</button>
+      <button class="nav-item" onclick="navigate('inventory')"><span class="icon">📦</span>Inventory</button>
+      <button class="nav-item" onclick="navigate('grocery')"><span class="icon">🛒</span>Grocery List</button>
+      <button class="nav-item" onclick="navigate('alerts')"><span class="icon">🔔</span>Alerts <span id="alert-count" style="margin-left:auto;background:var(--danger);color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;display:none"></span></button>
+      <button class="nav-item" onclick="navigate('recipes')"><span class="icon">📖</span>Recipes</button>
+      <button class="nav-item" onclick="navigate('add-item')"><span class="icon">➕</span>Add Item</button>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-badge">
+        <div class="user-avatar" id="user-av">D</div>
+        <div>
+          <div class="user-name" id="user-name-disp">Demo User</div>
+          <div class="user-email" id="user-email-disp">demo@smartpantry.app</div>
+        </div>
+      </div>
+      <button class="btn btn-secondary btn-sm" style="margin-top:10px;width:100%" onclick="logout()">Sign Out</button>
+    </div>
+  </nav>
+
+  <main class="main">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <h1 class="page-title">Your <span>Pantry</span></h1>
+        <button class="btn btn-primary btn-sm" onclick="openModal('add-modal')">+ Add Item</button>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card green">
+          <div class="stat-icon">📦</div>
+          <div class="stat-val" id="stat-total">0</div>
+          <div class="stat-label">Total Items</div>
+        </div>
+        <div class="stat-card yellow">
+          <div class="stat-icon">⚠️</div>
+          <div class="stat-val" id="stat-low">0</div>
+          <div class="stat-label">Low Stock</div>
+        </div>
+        <div class="stat-card red">
+          <div class="stat-icon">🗓️</div>
+          <div class="stat-val" id="stat-expiry">0</div>
+          <div class="stat-label">Expiring Soon</div>
+        </div>
+        <div class="stat-card orange">
+          <div class="stat-icon">🛒</div>
+          <div class="stat-val" id="stat-grocery">0</div>
+          <div class="stat-label">On Shopping List</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+        <div class="card">
+          <div class="card-head"><h3>⚠️ Low Stock Alerts</h3></div>
+          <div id="low-stock-list" class="card-body"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>📅 Expiring Soon</h3></div>
+          <div id="expiry-list" class="card-body"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>📊 Stock Overview (by Category)</h3></div>
+        <div class="chart-wrap">
+          <div class="mini-chart" id="dash-chart"></div>
+          <div style="display:flex;gap:16px;margin-top:10px;flex-wrap:wrap" id="chart-legend"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INVENTORY -->
+    <div class="page" id="page-inventory">
+      <div class="page-header">
+        <h1 class="page-title">Inventory <span>Manager</span></h1>
+        <button class="btn btn-primary btn-sm" onclick="openModal('add-modal')">+ Add Item</button>
+      </div>
+      <div class="search-bar">
+        <input type="text" id="inv-search" placeholder="🔍  Search items..." oninput="renderInventory()"/>
+      </div>
+      <div class="filter-chips" id="cat-chips"></div>
+      <div class="card" id="inventory-table-wrap"></div>
+    </div>
+
+    <!-- GROCERY LIST -->
+    <div class="page" id="page-grocery">
+      <div class="page-header">
+        <h1 class="page-title">Shopping <span>List</span></h1>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-secondary btn-sm" onclick="autoGenerateList()">⚡ Auto-Generate</button>
+          <button class="btn btn-primary btn-sm" onclick="openModal('grocery-modal')">+ Add</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <h3>Items to Buy</h3>
+          <button class="btn btn-secondary btn-sm" onclick="clearChecked()">Clear Checked</button>
+        </div>
+        <div id="grocery-list-body" class="card-body"></div>
+      </div>
+    </div>
+
+    <!-- ALERTS -->
+    <div class="page" id="page-alerts">
+      <div class="page-header">
+        <h1 class="page-title">Smart <span>Alerts</span></h1>
+      </div>
+      <div style="display:grid;gap:16px">
+        <div class="card">
+          <div class="card-head"><h3>🔴 Critical — Expiry Warnings</h3></div>
+          <div id="alert-expiry-detail" class="card-body"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>🟡 Low Stock Warnings</h3></div>
+          <div id="alert-lowstock-detail" class="card-body"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RECIPES -->
+    <div class="page" id="page-recipes">
+      <div class="page-header">
+        <h1 class="page-title">Recipe <span>Planner</span></h1>
+        <button class="btn btn-primary btn-sm" onclick="openModal('recipe-modal')">+ Add Recipe</button>
+      </div>
+      <div id="recipes-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px"></div>
+    </div>
+
+    <!-- ADD ITEM PAGE (nav shortcut) -->
+    <div class="page" id="page-add-item">
+      <div class="page-header">
+        <h1 class="page-title">Add <span>Item</span></h1>
+      </div>
+      <div class="card" style="max-width:560px">
+        <div class="card-body" style="padding:28px">
+          <div class="form-grid">
+            <div class="full form-group"><label>Item Name</label><input id="qi-name" placeholder="e.g. Basmati Rice"/></div>
+            <div class="form-group"><label>Category</label>
+              <select id="qi-cat">
+                <option>Grains & Cereals</option><option>Dairy</option><option>Produce</option>
+                <option>Meat & Fish</option><option>Snacks</option><option>Beverages</option>
+                <option>Spices</option><option>Cleaning</option><option>Personal Care</option><option>Other</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Unit</label>
+              <select id="qi-unit">
+                <option>kg</option><option>g</option><option>L</option><option>ml</option>
+                <option>pcs</option><option>pack</option><option>dozen</option><option>box</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Current Qty</label><input type="number" id="qi-qty" value="1" min="0"/></div>
+            <div class="form-group"><label>Min Stock Level</label><input type="number" id="qi-min" value="1" min="0"/></div>
+            <div class="form-group"><label>Expiry Date</label><input type="date" id="qi-exp"/></div>
+            <div class="form-group full"><label>Price (₹)</label><input type="number" id="qi-price" placeholder="0.00"/></div>
+          </div>
+          <button class="btn btn-primary" onclick="quickAddItem()">Add to Inventory</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODALS -->
+<div class="overlay" id="add-modal-overlay">
+  <div class="modal">
+    <div class="modal-title">➕ Add Inventory Item</div>
+    <div class="form-grid">
+      <div class="form-group full"><label>Item Name *</label><input id="m-name" placeholder="e.g. Amul Milk"/></div>
+      <div class="form-group"><label>Category</label>
+        <select id="m-cat">
+          <option>Grains & Cereals</option><option>Dairy</option><option>Produce</option>
+          <option>Meat & Fish</option><option>Snacks</option><option>Beverages</option>
+          <option>Spices</option><option>Cleaning</option><option>Personal Care</option><option>Other</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Unit</label>
+        <select id="m-unit">
+          <option>kg</option><option>g</option><option>L</option><option>ml</option>
+          <option>pcs</option><option>pack</option><option>dozen</option><option>box</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Quantity</label><input type="number" id="m-qty" value="1" min="0"/></div>
+      <div class="form-group"><label>Min Stock</label><input type="number" id="m-min" value="1" min="0"/></div>
+      <div class="form-group full"><label>Expiry Date</label><input type="date" id="m-exp"/></div>
+      <div class="form-group full"><label>Price (₹)</label><input type="number" id="m-price" placeholder="0.00" step="0.01"/></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="btn btn-primary" onclick="addItem()">Add Item</button>
+      <button class="btn btn-secondary" onclick="closeModal('add-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="edit-modal-overlay">
+  <div class="modal">
+    <div class="modal-title">✏️ Edit Item</div>
+    <input type="hidden" id="e-id"/>
+    <div class="form-grid">
+      <div class="form-group full"><label>Item Name</label><input id="e-name"/></div>
+      <div class="form-group"><label>Category</label>
+        <select id="e-cat">
+          <option>Grains & Cereals</option><option>Dairy</option><option>Produce</option>
+          <option>Meat & Fish</option><option>Snacks</option><option>Beverages</option>
+          <option>Spices</option><option>Cleaning</option><option>Personal Care</option><option>Other</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Unit</label>
+        <select id="e-unit">
+          <option>kg</option><option>g</option><option>L</option><option>ml</option>
+          <option>pcs</option><option>pack</option><option>dozen</option><option>box</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Quantity</label><input type="number" id="e-qty" min="0"/></div>
+      <div class="form-group"><label>Min Stock</label><input type="number" id="e-min" min="0"/></div>
+      <div class="form-group full"><label>Expiry Date</label><input type="date" id="e-exp"/></div>
+      <div class="form-group full"><label>Price (₹)</label><input type="number" id="e-price" step="0.01"/></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="btn btn-primary" onclick="saveEdit()">Save Changes</button>
+      <button class="btn btn-secondary" onclick="closeModal('edit-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="grocery-modal-overlay">
+  <div class="modal">
+    <div class="modal-title">🛒 Add to Shopping List</div>
+    <div class="form-group"><label>Item Name</label><input id="g-name" placeholder="e.g. Eggs"/></div>
+    <div class="form-grid">
+      <div class="form-group"><label>Quantity</label><input type="number" id="g-qty" value="1" min="1"/></div>
+      <div class="form-group"><label>Unit</label>
+        <select id="g-unit"><option>kg</option><option>g</option><option>L</option><option>ml</option><option>pcs</option><option>pack</option><option>dozen</option><option>box</option></select>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="btn btn-primary" onclick="addToGrocery()">Add to List</button>
+      <button class="btn btn-secondary" onclick="closeModal('grocery-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="recipe-modal-overlay">
+  <div class="modal">
+    <div class="modal-title">📖 Add Recipe</div>
+    <div class="form-group"><label>Recipe Name</label><input id="r-name" placeholder="e.g. Dal Tadka"/></div>
+    <div class="form-group"><label>Ingredients (one per line: name qty unit)</label>
+      <textarea id="r-ingredients" rows="5" placeholder="Toor Dal 200 g&#10;Tomato 2 pcs&#10;Onion 1 pcs&#10;Ghee 2 tbsp" style="resize:vertical"></textarea>
+    </div>
+    <div class="form-group"><label>Instructions</label>
+      <textarea id="r-steps" rows="4" placeholder="Step-by-step cooking instructions..." style="resize:vertical"></textarea>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="btn btn-primary" onclick="addRecipe()">Save Recipe</button>
+      <button class="btn btn-secondary" onclick="closeModal('recipe-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── State ───────────────────────────────────────────────────────────────────
+let state = {
+  user: null,
+  items: [],
+  groceryList: [],
+  recipes: [],
+  activeFilter: 'All'
+};
+
+const CATEGORIES = ['All','Grains & Cereals','Dairy','Produce','Meat & Fish','Snacks','Beverages','Spices','Cleaning','Personal Care','Other'];
+
+// ─── Sample Data ──────────────────────────────────────────────────────────────
+function loadSampleData(){
+  const today = new Date();
+  const fmt = d => d.toISOString().split('T')[0];
+  const add = (n, days) => { const d=new Date(today); d.setDate(d.getDate()+days); return fmt(d); };
+
+  state.items = [
+    {id:1,name:'Basmati Rice',cat:'Grains & Cereals',unit:'kg',qty:2,min:1,expiry:'',price:120},
+    {id:2,name:'Amul Milk',cat:'Dairy',unit:'L',qty:1,min:2,expiry:add(today,2),price:64},
+    {id:3,name:'Eggs',cat:'Dairy',unit:'dozen',qty:1,min:1,expiry:add(today,10),price:90},
+    {id:4,name:'Tomatoes',cat:'Produce',unit:'kg',qty:0.5,min:1,expiry:add(today,3),price:40},
+    {id:5,name:'Whole Wheat Bread',cat:'Grains & Cereals',unit:'pack',qty:1,min:1,expiry:add(today,5),price:45},
+    {id:6,name:'Toor Dal',cat:'Grains & Cereals',unit:'kg',qty:3,min:0.5,expiry:'',price:130},
+    {id:7,name:'Cooking Oil',cat:'Other',unit:'L',qty:0.2,min:1,expiry:'',price:160},
+    {id:8,name:'Onions',cat:'Produce',unit:'kg',qty:2,min:1,expiry:'',price:30},
+    {id:9,name:'Amul Butter',cat:'Dairy',unit:'pack',qty:1,min:2,expiry:add(today,7),price:55},
+    {id:10,name:'Green Tea',cat:'Beverages',unit:'box',qty:0,min:1,expiry:add(today,120),price:180},
+    {id:11,name:'Cumin Seeds',cat:'Spices',unit:'g',qty:100,min:50,expiry:'',price:25},
+    {id:12,name:'Detergent',cat:'Cleaning',unit:'pack',qty:0,min:1,expiry:'',price:95},
+  ];
+  state.groceryList = [
+    {id:1,name:'Amul Milk',qty:2,unit:'L',checked:false,src:'lowstock'},
+    {id:2,name:'Cooking Oil',qty:1,unit:'L',checked:false,src:'lowstock'},
+    {id:3,name:'Bread',qty:1,unit:'pack',checked:true,src:'manual'},
+  ];
+  state.recipes = [
+    {id:1,name:'Dal Tadka',ingredients:[{name:'Toor Dal',qty:200,unit:'g'},{name:'Tomato',qty:2,unit:'pcs'},{name:'Onion',qty:1,unit:'pcs'},{name:'Ghee',qty:2,unit:'tbsp'}],steps:'1. Boil dal until soft\n2. Prepare tadka with onion, tomato, spices\n3. Mix and simmer 10 mins'},
+    {id:2,name:'Masala Omelette',ingredients:[{name:'Eggs',qty:3,unit:'pcs'},{name:'Onion',qty:1,unit:'pcs'},{name:'Tomato',qty:1,unit:'pcs'}],steps:'1. Beat eggs\n2. Add chopped veggies\n3. Cook on pan 5-7 mins'},
+    {id:3,name:'Jeera Rice',ingredients:[{name:'Basmati Rice',qty:200,unit:'g'},{name:'Cumin Seeds',qty:5,unit:'g'},{name:'Cooking Oil',qty:10,unit:'ml'}],steps:'1. Wash and soak rice\n2. Heat oil, add cumin\n3. Add rice and water, cook 15 mins'},
+  ];
+  saveState();
+}
+
+function saveState(){ localStorage.setItem('sp_state', JSON.stringify(state)); }
+function loadState(){
+  const s = localStorage.getItem('sp_state');
+  if(s) state = JSON.parse(s);
+}
+
+// ─── Auth ─────────────────────────────────────────────────────────────────────
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active', (tab==='login'&&i===0)||(tab==='register'&&i===1)));
+  document.getElementById('login-form').style.display = tab==='login'?'block':'none';
+  document.getElementById('register-form').style.display = tab==='register'?'block':'none';
+}
+function fillDemo(){
+  document.getElementById('login-email').value='demo@smartpantry.app';
+  document.getElementById('login-pass').value='password123';
+}
+function doLogin(){
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  if(!email||!pass){ showToast('Please fill all fields'); return; }
+  // Simulate auth
+  const name = email.split('@')[0].replace(/[._]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+  state.user = {email, name};
+  loadSampleData();
+  enterApp();
+}
+function doRegister(){
+  const name=document.getElementById('reg-name').value.trim();
+  const email=document.getElementById('reg-email').value.trim();
+  const pass=document.getElementById('reg-pass').value;
+  if(!name||!email||!pass){ showToast('Please fill all fields'); return; }
+  state.user={email,name};
+  loadSampleData();
+  enterApp();
+}
+function enterApp(){
+  document.getElementById('auth-screen').style.display='none';
+  document.getElementById('app').style.display='flex';
+  document.getElementById('user-name-disp').textContent=state.user.name;
+  document.getElementById('user-email-disp').textContent=state.user.email;
+  document.getElementById('user-av').textContent=state.user.name[0].toUpperCase();
+  navigate('dashboard');
+}
+function logout(){
+  state.user=null;
+  document.getElementById('app').style.display='none';
+  document.getElementById('auth-screen').style.display='flex';
+}
+
+// ─── Navigation ───────────────────────────────────────────────────────────────
+function navigate(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const pid = page==='add-item'?'page-add-item':'page-'+page;
+  document.getElementById(pid)?.classList.add('active');
+  const navMap={dashboard:0,inventory:1,grocery:2,alerts:3,recipes:4,'add-item':5};
+  document.querySelectorAll('.nav-item')[navMap[page]]?.classList.add('active');
+  document.getElementById('sidebar')?.classList.remove('open');
+  // Render
+  if(page==='dashboard') renderDashboard();
+  if(page==='inventory') renderInventory();
+  if(page==='grocery') renderGrocery();
+  if(page==='alerts') renderAlerts();
+  if(page==='recipes') renderRecipes();
+}
+function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('open'); }
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+function daysUntil(dateStr){
+  if(!dateStr) return null;
+  return Math.ceil((new Date(dateStr)-new Date())/86400000);
+}
+function isLow(item){ return item.qty < item.min; }
+function isExpiring(item){ const d=daysUntil(item.expiry); return d!==null && d<=7; }
+function isExpired(item){ const d=daysUntil(item.expiry); return d!==null && d<0; }
+function stockPct(item){ if(item.min===0) return 100; return Math.min(100,Math.round(item.qty/item.min*100)); }
+
+function stockColor(item){
+  if(isExpired(item)) return '#ef4444';
+  if(isLow(item)) return '#f59e0b';
+  return '#22d3a5';
+}
+function nextId(arr){ return arr.length?Math.max(...arr.map(x=>x.id))+1:1; }
+
+// ─── Dashboard ────────────────────────────────────────────────────────────────
+function renderDashboard(){
+  const low = state.items.filter(isLow);
+  const exp = state.items.filter(i=>isExpiring(i)||isExpired(i));
+  document.getElementById('stat-total').textContent=state.items.length;
+  document.getElementById('stat-low').textContent=low.length;
+  document.getElementById('stat-expiry').textContent=exp.length;
+  document.getElementById('stat-grocery').textContent=state.groceryList.filter(g=>!g.checked).length;
+
+  // Alert badge
+  const total=low.length+exp.length;
+  const badge=document.getElementById('alert-count');
+  if(total>0){badge.textContent=total;badge.style.display='inline'}else{badge.style.display='none'}
+
+  // Low stock mini-list
+  const ls=document.getElementById('low-stock-list');
+  if(low.length===0){
+    ls.innerHTML='<div class="empty-state"><div class="emoji">✅</div><p>All items well stocked!</p></div>';
+  } else {
+    ls.innerHTML=low.slice(0,5).map(item=>`
+      <div class="alert-item">
+        <div class="alert-icon warn">⚠️</div>
+        <div class="alert-body">
+          <div class="alert-title">${item.name}</div>
+          <div class="alert-desc">${item.qty} ${item.unit} remaining · Min: ${item.min} ${item.unit}</div>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="addLowToGrocery(${item.id})">+ List</button>
+      </div>`).join('');
+  }
+
+  // Expiry mini-list
+  const el=document.getElementById('expiry-list');
+  if(exp.length===0){
+    el.innerHTML='<div class="empty-state"><div class="emoji">🗓️</div><p>No expiring items!</p></div>';
+  } else {
+    el.innerHTML=exp.slice(0,5).map(item=>{
+      const d=daysUntil(item.expiry);
+      const label=d<0?`Expired ${Math.abs(d)}d ago`:d===0?'Expires today':`Expires in ${d}d`;
+      const cls=d<0||d<=2?'badge-red':'badge-yellow';
+      return `<div class="alert-item">
+        <div class="alert-icon danger">📅</div>
+        <div class="alert-body">
+          <div class="alert-title">${item.name}</div>
+          <div class="alert-desc">${item.qty} ${item.unit} · <span class="badge ${cls}">${label}</span></div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Category chart
+  const catCounts={};
+  state.items.forEach(i=>{ catCounts[i.cat]=(catCounts[i.cat]||0)+1; });
+  const cats=Object.entries(catCounts).sort((a,b)=>b[1]-a[1]);
+  const maxV=Math.max(...cats.map(c=>c[1]),1);
+  const colors=['#22d3a5','#f97316','#f59e0b','#63b3ed','#a78bfa','#fb7185','#34d399','#60a5fa'];
+  document.getElementById('dash-chart').innerHTML=cats.map(([name,val],i)=>`
+    <div class="bar-col" style="height:${Math.round(val/maxV*100)}%;background:${colors[i%colors.length]}33;border-top:2px solid ${colors[i%colors.length]}">
+      <div class="tip">${name}: ${val}</div>
+    </div>`).join('');
+  document.getElementById('chart-legend').innerHTML=cats.map(([name,val],i)=>
+    `<span style="font-size:12px;color:${colors[i%colors.length]};display:flex;align-items:center;gap:4px">
+      <span style="width:8px;height:8px;background:${colors[i%colors.length]};border-radius:50%;display:inline-block"></span>
+      ${name} (${val})
+    </span>`).join('');
+}
+
+// ─── Inventory ────────────────────────────────────────────────────────────────
+function renderInventory(){
+  const query=(document.getElementById('inv-search')?.value||'').toLowerCase();
+  const chips=document.getElementById('cat-chips');
+  if(chips){
+    chips.innerHTML=CATEGORIES.map(c=>`<button class="chip ${state.activeFilter===c?'active':''}" onclick="setFilter('${c}')">${c}</button>`).join('');
+  }
+  let items=state.items;
+  if(state.activeFilter!=='All') items=items.filter(i=>i.cat===state.activeFilter);
+  if(query) items=items.filter(i=>i.name.toLowerCase().includes(query));
+
+  const wrap=document.getElementById('inventory-table-wrap');
+  if(!items.length){
+    wrap.innerHTML='<div class="empty-state"><div class="emoji">📦</div><p>No items found. Add some!</p></div>';
+    return;
+  }
+  wrap.innerHTML=`<table>
+    <thead><tr><th>Item</th><th>Category</th><th>Stock</th><th>Unit</th><th>Expiry</th><th>Price</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>${items.map(item=>{
+      const pct=stockPct(item);
+      const d=daysUntil(item.expiry);
+      const expLabel=item.expiry?(d<0?`Exp ${Math.abs(d)}d ago`:d===0?'Today':`${d}d`):'—';
+      const expCls=item.expiry?(d<0?'badge-red':d<=3?'badge-red':d<=7?'badge-yellow':'badge-green'):'badge-gray';
+      const stStatus=isExpired(item)?'badge-red':isLow(item)?'badge-yellow':'badge-green';
+      const stLabel=isExpired(item)?'Expired':isLow(item)?'Low Stock':'In Stock';
+      return `<tr>
+        <td><strong>${item.name}</strong></td>
+        <td><span class="badge badge-blue">${item.cat}</span></td>
+        <td>
+          <div class="qty-control">
+            <button class="qty-btn" onclick="changeQty(${item.id},-1)">−</button>
+            <span class="qty-num">${item.qty}</span>
+            <button class="qty-btn" onclick="changeQty(${item.id},1)">+</button>
+          </div>
+          <div class="stock-bar" style="margin-top:5px">
+            <div class="stock-fill" style="width:${pct}%;background:${stockColor(item)}"></div>
+          </div>
+        </td>
+        <td>${item.unit}</td>
+        <td><span class="badge ${expCls}">${expLabel}</span></td>
+        <td>${item.price?'₹'+item.price:'—'}</td>
+        <td><span class="badge ${stStatus}">${stLabel}</span></td>
+        <td><div class="actions">
+          <button class="icon-btn" onclick="openEdit(${item.id})" title="Edit">✏️</button>
+          <button class="icon-btn del" onclick="deleteItem(${item.id})" title="Delete">🗑️</button>
+        </div></td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table>`;
+}
+function setFilter(cat){ state.activeFilter=cat; renderInventory(); }
+
+// ─── CRUD ─────────────────────────────────────────────────────────────────────
+function addItem(){
+  const name=document.getElementById('m-name').value.trim();
+  if(!name){showToast('Please enter item name');return;}
+  state.items.push({
+    id:nextId(state.items),
+    name,
+    cat:document.getElementById('m-cat').value,
+    unit:document.getElementById('m-unit').value,
+    qty:parseFloat(document.getElementById('m-qty').value)||0,
+    min:parseFloat(document.getElementById('m-min').value)||1,
+    expiry:document.getElementById('m-exp').value||'',
+    price:parseFloat(document.getElementById('m-price').value)||0
+  });
+  saveState();
+  closeModal('add-modal');
+  showToast('✅ Item added!');
+  renderDashboard();
+  document.getElementById('m-name').value='';
+}
+
+function quickAddItem(){
+  const name=document.getElementById('qi-name').value.trim();
+  if(!name){showToast('Please enter item name');return;}
+  state.items.push({
+    id:nextId(state.items),
+    name,
+    cat:document.getElementById('qi-cat').value,
+    unit:document.getElementById('qi-unit').value,
+    qty:parseFloat(document.getElementById('qi-qty').value)||0,
+    min:parseFloat(document.getElementById('qi-min').value)||1,
+    expiry:document.getElementById('qi-exp').value||'',
+    price:parseFloat(document.getElementById('qi-price').value)||0
+  });
+  saveState();
+  showToast('✅ Item added!');
+  document.getElementById('qi-name').value='';
+  document.getElementById('qi-qty').value='1';
+}
+
+function openEdit(id){
+  const item=state.items.find(i=>i.id===id);
+  if(!item) return;
+  document.getElementById('e-id').value=id;
+  document.getElementById('e-name').value=item.name;
+  document.getElementById('e-cat').value=item.cat;
+  document.getElementById('e-unit').value=item.unit;
+  document.getElementById('e-qty').value=item.qty;
+  document.getElementById('e-min').value=item.min;
+  document.getElementById('e-exp').value=item.expiry;
+  document.getElementById('e-price').value=item.price||'';
+  openModal('edit-modal');
+}
+function saveEdit(){
+  const id=parseInt(document.getElementById('e-id').value);
+  const item=state.items.find(i=>i.id===id);
+  if(!item) return;
+  item.name=document.getElementById('e-name').value;
+  item.cat=document.getElementById('e-cat').value;
+  item.unit=document.getElementById('e-unit').value;
+  item.qty=parseFloat(document.getElementById('e-qty').value)||0;
+  item.min=parseFloat(document.getElementById('e-min').value)||1;
+  item.expiry=document.getElementById('e-exp').value||'';
+  item.price=parseFloat(document.getElementById('e-price').value)||0;
+  saveState(); closeModal('edit-modal');
+  showToast('✅ Item updated!');
+  renderInventory(); renderDashboard();
+}
+function deleteItem(id){
+  if(!confirm('Delete this item?')) return;
+  state.items=state.items.filter(i=>i.id!==id);
+  saveState(); showToast('🗑️ Item deleted'); renderInventory(); renderDashboard();
+}
+function changeQty(id, delta){
+  const item=state.items.find(i=>i.id===id);
+  if(!item) return;
+  item.qty=Math.max(0,item.qty+delta);
+  saveState(); renderInventory(); renderDashboard();
+}
+
+// ─── Grocery List ─────────────────────────────────────────────────────────────
+function renderGrocery(){
+  const body=document.getElementById('grocery-list-body');
+  if(!state.groceryList.length){
+    body.innerHTML='<div class="empty-state"><div class="emoji">🛒</div><p>Your list is empty. Auto-generate or add items!</p></div>';
+    return;
+  }
+  const unchecked=state.groceryList.filter(g=>!g.checked);
+  const checked=state.groceryList.filter(g=>g.checked);
+  let html='';
+  if(unchecked.length){
+    html+=`<div class="section-head">To Buy (${unchecked.length})</div>`;
+    html+=unchecked.map(g=>groceryRow(g)).join('');
+  }
+  if(checked.length){
+    html+=`<div class="section-head">Checked Off (${checked.length})</div>`;
+    html+=checked.map(g=>groceryRow(g)).join('');
+  }
+  body.innerHTML=html;
+}
+function groceryRow(g){
+  const srcBadge=g.src?`<span class="badge badge-gray" style="margin-left:8px;font-size:11px">${g.src}</span>`:'';
+  return `<div class="grocery-item ${g.checked?'checked':''}" id="gitem-${g.id}">
+    <div class="check-box ${g.checked?'checked':''}" onclick="toggleGrocery(${g.id})">${g.checked?'✓':''}</div>
+    <div class="grocery-name">${g.name} ${srcBadge}</div>
+    <div class="grocery-qty">${g.qty} ${g.unit}</div>
+    <button class="icon-btn del" onclick="removeGrocery(${g.id})" title="Remove">×</button>
+  </div>`;
+}
+function toggleGrocery(id){
+  const g=state.groceryList.find(x=>x.id===id);
+  if(g){ g.checked=!g.checked; saveState(); renderGrocery(); }
+}
+function removeGrocery(id){
+  state.groceryList=state.groceryList.filter(x=>x.id!==id);
+  saveState(); renderGrocery();
+}
+function clearChecked(){
+  state.groceryList=state.groceryList.filter(g=>!g.checked);
+  saveState(); renderGrocery(); showToast('Cleared checked items');
+}
+function addToGrocery(){
+  const name=document.getElementById('g-name').value.trim();
+  if(!name){showToast('Enter item name');return;}
+  state.groceryList.push({id:nextId(state.groceryList),name,qty:parseFloat(document.getElementById('g-qty').value)||1,unit:document.getElementById('g-unit').value,checked:false,src:'manual'});
+  saveState(); closeModal('grocery-modal'); renderGrocery();
+  showToast('✅ Added to list!');
+  document.getElementById('g-name').value='';
+}
+function addLowToGrocery(itemId){
+  const item=state.items.find(i=>i.id===itemId);
+  if(!item) return;
+  if(state.groceryList.find(g=>g.name===item.name&&!g.checked)){showToast('Already on list!');return;}
+  state.groceryList.push({id:nextId(state.groceryList),name:item.name,qty:item.min,unit:item.unit,checked:false,src:'lowstock'});
+  saveState(); showToast('➕ Added to shopping list!');
+}
+function autoGenerateList(){
+  const low=state.items.filter(isLow);
+  const exp=state.items.filter(i=>isExpired(i));
+  let added=0;
+  [...low,...exp].forEach(item=>{
+    if(!state.groceryList.find(g=>g.name===item.name&&!g.checked)){
+      state.groceryList.push({id:nextId(state.groceryList),name:item.name,qty:item.min,unit:item.unit,checked:false,src:'auto'});
+      added++;
+    }
+  });
+  saveState(); renderGrocery();
+  showToast(`⚡ Added ${added} items from alerts!`);
+}
+
+// ─── Alerts ───────────────────────────────────────────────────────────────────
+function renderAlerts(){
+  const expired=state.items.filter(isExpired);
+  const expiring=state.items.filter(i=>isExpiring(i)&&!isExpired(i));
+  const low=state.items.filter(i=>isLow(i)&&!isExpired(i));
+
+  const expDiv=document.getElementById('alert-expiry-detail');
+  if(!expired.length&&!expiring.length){
+    expDiv.innerHTML='<div class="empty-state"><div class="emoji">✅</div><p>No expiry alerts!</p></div>';
+  } else {
+    expDiv.innerHTML=[...expired,...expiring].map(item=>{
+      const d=daysUntil(item.expiry);
+      const label=d<0?`Expired ${Math.abs(d)} days ago`:d===0?'Expires TODAY!':d===1?'Expires tomorrow':`Expires in ${d} days`;
+      const cls=d<=0?'badge-red':d<=3?'badge-red':'badge-yellow';
+      return `<div class="alert-item">
+        <div class="alert-icon ${d<=0?'danger':'warn'}">${d<=0?'💀':'⏰'}</div>
+        <div class="alert-body">
+          <div class="alert-title">${item.name}</div>
+          <div class="alert-desc">${item.qty} ${item.unit} · <span class="badge ${cls}">${label}</span></div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  const lsDiv=document.getElementById('alert-lowstock-detail');
+  if(!low.length){
+    lsDiv.innerHTML='<div class="empty-state"><div class="emoji">✅</div><p>All items sufficiently stocked!</p></div>';
+  } else {
+    lsDiv.innerHTML=low.map(item=>`
+      <div class="alert-item">
+        <div class="alert-icon warn">📉</div>
+        <div class="alert-body">
+          <div class="alert-title">${item.name}</div>
+          <div class="alert-desc">Have: ${item.qty} ${item.unit} · Need: ${item.min} ${item.unit} minimum · Deficit: ${(item.min-item.qty).toFixed(1)} ${item.unit}</div>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="addLowToGrocery(${item.id});showToast('Added!')">+ Add to List</button>
+      </div>`).join('');
+  }
+}
+
+// ─── Recipes ──────────────────────────────────────────────────────────────────
+function renderRecipes(){
+  const grid=document.getElementById('recipes-grid');
+  if(!state.recipes.length){
+    grid.innerHTML='<div class="empty-state"><div class="emoji">📖</div><p>No recipes yet. Add one!</p></div>';
+    return;
+  }
+  grid.innerHTML=state.recipes.map(r=>`
+    <div class="card" style="padding:20px">
+      <div style="font-family:var(--font-head);font-size:18px;font-weight:700;margin-bottom:8px">${r.name}</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:12px">${r.ingredients.length} ingredients</div>
+      <div style="margin-bottom:12px">
+        ${r.ingredients.slice(0,4).map(i=>`<span class="badge badge-blue" style="margin:2px">${i.name} ${i.qty}${i.unit}</span>`).join('')}
+        ${r.ingredients.length>4?`<span class="badge badge-gray">+${r.ingredients.length-4} more</span>`:''}
+      </div>
+      <div style="font-size:13px;color:var(--muted);white-space:pre-line;border-top:1px solid var(--border);padding-top:10px;margin-bottom:12px">${r.steps||'No steps added'}</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-secondary btn-sm" onclick="addRecipeToList(${r.id})">🛒 Add to List</button>
+        <button class="btn btn-secondary btn-sm" onclick="deleteRecipe(${r.id})">🗑️</button>
+      </div>
+    </div>`).join('');
+}
+
+function addRecipe(){
+  const name=document.getElementById('r-name').value.trim();
+  if(!name){showToast('Enter recipe name');return;}
+  const lines=document.getElementById('r-ingredients').value.trim().split('\n').filter(Boolean);
+  const ingredients=lines.map(l=>{
+    const parts=l.trim().split(/\s+/);
+    const unit=parts[parts.length-1]||'pcs';
+    const qty=parseFloat(parts[parts.length-2])||1;
+    const iname=parts.slice(0,parts.length-2).join(' ')||l;
+    return{name:iname,qty,unit};
+  });
+  state.recipes.push({id:nextId(state.recipes),name,ingredients,steps:document.getElementById('r-steps').value});
+  saveState(); closeModal('recipe-modal'); renderRecipes();
+  showToast('✅ Recipe saved!');
+  document.getElementById('r-name').value='';
+  document.getElementById('r-ingredients').value='';
+  document.getElementById('r-steps').value='';
+}
+
+function addRecipeToList(recipeId){
+  const r=state.recipes.find(x=>x.id===recipeId);
+  if(!r) return;
+  let added=0;
+  r.ingredients.forEach(ing=>{
+    if(!state.groceryList.find(g=>g.name.toLowerCase()===ing.name.toLowerCase()&&!g.checked)){
+      state.groceryList.push({id:nextId(state.groceryList),name:ing.name,qty:ing.qty,unit:ing.unit,checked:false,src:'recipe'});
+      added++;
+    }
+  });
+  saveState();
+  showToast(`🍳 Added ${added} ingredients from ${r.name}!`);
+  navigate('grocery');
+}
+
+function deleteRecipe(id){
+  state.recipes=state.recipes.filter(x=>x.id!==id);
+  saveState(); renderRecipes(); showToast('Recipe deleted');
+}
+
+// ─── Modal ────────────────────────────────────────────────────────────────────
+function openModal(id){
+  document.getElementById(id+'-overlay').classList.add('open');
+}
+function closeModal(id){
+  document.getElementById(id+'-overlay').classList.remove('open');
+}
+document.querySelectorAll('.overlay').forEach(o=>{
+  o.addEventListener('click',e=>{ if(e.target===o) o.classList.remove('open'); });
+});
+
+// ─── Toast ────────────────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+loadState();
+if(state.user){
+  enterApp();
+} else {
+  document.getElementById('auth-screen').style.display='flex';
+}
+</script>
+</body>
+</html>

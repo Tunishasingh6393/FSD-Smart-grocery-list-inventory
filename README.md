@@ -1,4 +1,3 @@
-# FSD-Smart-grocery-list-inventor
 # 🛒 SmartPantry — Grocery & Inventory Manager
 
 > A full-featured Smart Grocery List & Inventory Management web app — built as a proof-of-work student project for Full Stack Development portfolios.
@@ -249,5 +248,4 @@ MIT License — free to use for educational and portfolio purposes.
 
 **Built with ❤️ as a Full Stack Development portfolio project.**
 
-
-
+> ⭐ Star this repo if it helped you!
